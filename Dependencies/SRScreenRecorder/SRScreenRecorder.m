@@ -461,6 +461,11 @@ static NSInteger counter;
              
              NSLog(@"%@", message);
              
+             // Output path
+             self.filenameBlock = ^(void) {
+                 return outputPath;
+             };
+             
              if (weakSelf.finishRecordingBlock)
              {
                  weakSelf.finishRecordingBlock(YES, message);

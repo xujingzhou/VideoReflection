@@ -1031,6 +1031,8 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     NSLog(@"handleCloseVideo");
     
     [self showVideoPlayView:FALSE];
+    [self hiddenBottomControlView];
+    
     self.videoBackgroundPickURL = nil;
     self.videoEmbededPickURL = nil;
     
@@ -1088,8 +1090,8 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     }
 }
 
-#pragma mark - handleDemo
-- (void)handleDemo
+#pragma mark - showDemoFromOriginalVideo:withDestinationVideo
+- (void)showDemoFromOriginalVideo:(NSString *)originalVideo withDestinationVideo:(NSString *)destinationVideo
 {
     CGFloat navHeight = CGRectGetHeight(self.navigationController.navigationBar.bounds);
     CGFloat hintHeight = 30;
@@ -1136,10 +1138,10 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     [[KGModal sharedInstance] showWithContentView:_demoVideoContentView andAnimated:YES];
     
     // Play
-    NSString *inputVideoPath = getFilePath(DemoDestinationVideoName);
-    [self playDemoVideo:inputVideoPath withinVideoPlayerController:_demoDestinationVideoPlayerController];
-    inputVideoPath = getFilePath(DemoOriginalVideoName);
-    [self playDemoVideo:inputVideoPath withinVideoPlayerController:_demoOriginalVideoPlayerController];
+    NSString *originalVideoPath = originalVideo;
+    [self playDemoVideo:originalVideoPath withinVideoPlayerController:_demoOriginalVideoPlayerController];
+    NSString *destinationVideoPath = destinationVideo;
+    [self playDemoVideo:destinationVideoPath withinVideoPlayerController:_demoDestinationVideoPlayerController];
 }
 
 #pragma mark - Convert
@@ -1239,6 +1241,10 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
             }
             
             showAlertMessage(result, nil);
+            
+            // Demo result
+            NSString *outputPath = [SRScreenRecorder sharedInstance].filenameBlock();
+            [self showDemoFromOriginalVideo:[_videoBackgroundPickURL relativePath] withDestinationVideo:outputPath];
             
             [self clearEmbeddedVideoImageViewArray];
             

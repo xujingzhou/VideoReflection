@@ -32,7 +32,7 @@ static NSArray *imageFrames;
 - (void)startAnimatingWithCompletionBlock:(Block)block
 {
 //    self.layer.cornerRadius = CGRectGetWidth(self.frame)/2;
-    self.layer.borderWidth = 2.0;
+    self.layer.borderWidth = 1.0;
     self.layer.borderColor = kLightBlue.CGColor;
     self.layer.masksToBounds = YES;
     
