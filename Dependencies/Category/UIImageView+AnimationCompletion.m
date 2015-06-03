@@ -8,7 +8,6 @@
 #define DEFAULT_FRAME_INTERVAL 6  // 60/DEFAULT_FRAME_INTERVAL frames/sec
 
 static size_t frameIndex, frameCount;
-static NSArray *imageFrames;
 
 @implementation UIImageView (AnimationCompletion)
 
@@ -32,13 +31,12 @@ static NSArray *imageFrames;
 - (void)startAnimatingWithCompletionBlock:(Block)block
 {
 //    self.layer.cornerRadius = CGRectGetWidth(self.frame)/2;
-    self.layer.borderWidth = 1.0;
+    self.layer.borderWidth = 2.0;
     self.layer.borderColor = kLightBlue.CGColor;
     self.layer.masksToBounds = YES;
     
     [self setblock:block];
     frameCount = [self.animationImages count];
-    imageFrames = getCGImagesArray(self.animationImages);
     [self initDisplay];
     [self setupTimer];
     
@@ -47,7 +45,7 @@ static NSArray *imageFrames;
 
 - (void)initDisplay
 {
-    self.layer.contents = imageFrames[0];
+    self.layer.contents = (id)[self.animationImages[0] CGImage];
 }
 
 - (void)startPlay
@@ -59,7 +57,7 @@ static NSArray *imageFrames;
     }
     
     frameIndex = frameIndex % frameCount;
-    self.layer.contents = imageFrames[frameIndex];
+    self.layer.contents = (id)[self.animationImages[frameIndex] CGImage];
 }
 
 - (void)startAnimatingWithCGImages:(NSArray*)cgImages CompletionBlock:(Block)block

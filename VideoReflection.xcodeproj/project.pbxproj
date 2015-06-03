@@ -129,7 +129,6 @@
 		B2D5F3371B0F5F1E002FE0ED /* StartLetter.png in Resources */ = {isa = PBXBuildFile; fileRef = B2D5F32A1B0F5F1E002FE0ED /* StartLetter.png */; };
 		B2D5F3381B0F5F1E002FE0ED /* Video_Add.png in Resources */ = {isa = PBXBuildFile; fileRef = B2D5F32B1B0F5F1E002FE0ED /* Video_Add.png */; };
 		B2D5F3391B0F5F1E002FE0ED /* IMG_Dst.mov in Resources */ = {isa = PBXBuildFile; fileRef = B2D5F32D1B0F5F1E002FE0ED /* IMG_Dst.mov */; };
-		B2D5F33A1B0F5F1E002FE0ED /* IMG_Orig.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = B2D5F32E1B0F5F1E002FE0ED /* IMG_Orig.mp4 */; };
 		B2D5F34A1B1061D6002FE0ED /* A Little Kiss.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B2D5F33F1B1061D6002FE0ED /* A Little Kiss.mp3 */; };
 		B2D5F34B1B1061D6002FE0ED /* Apple.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B2D5F3401B1061D6002FE0ED /* Apple.mp3 */; };
 		B2D5F34C1B1061D6002FE0ED /* Bye Bye Sunday.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B2D5F3411B1061D6002FE0ED /* Bye Bye Sunday.mp3 */; };
@@ -177,6 +176,7 @@
 		B2FCEF3E1B1D2DB6008FC289 /* VideoView.m in Sources */ = {isa = PBXBuildFile; fileRef = B2FCEF321B1D2DB6008FC289 /* VideoView.m */; };
 		B2FCEF3F1B1D2DB6008FC289 /* VideoAnimationLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = B2FCEF351B1D2DB6008FC289 /* VideoAnimationLayer.m */; };
 		B2FCEF441B1DE7BA008FC289 /* UIImageView+AnimationCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = B2FCEF431B1DE7BA008FC289 /* UIImageView+AnimationCompletion.m */; };
+		B2FCEF471B1EDCCC008FC289 /* UIAlertView+Blocks.m in Sources */ = {isa = PBXBuildFile; fileRef = B2FCEF461B1EDCCC008FC289 /* UIAlertView+Blocks.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -335,7 +335,6 @@
 		B2D5F32A1B0F5F1E002FE0ED /* StartLetter.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StartLetter.png; sourceTree = "<group>"; };
 		B2D5F32B1B0F5F1E002FE0ED /* Video_Add.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Video_Add.png; sourceTree = "<group>"; };
 		B2D5F32D1B0F5F1E002FE0ED /* IMG_Dst.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = IMG_Dst.mov; sourceTree = "<group>"; };
-		B2D5F32E1B0F5F1E002FE0ED /* IMG_Orig.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = IMG_Orig.mp4; sourceTree = "<group>"; };
 		B2D5F33B1B0F6068002FE0ED /* VideoReflection-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "VideoReflection-Prefix.pch"; sourceTree = "<group>"; };
 		B2D5F33F1B1061D6002FE0ED /* A Little Kiss.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "A Little Kiss.mp3"; sourceTree = "<group>"; };
 		B2D5F3401B1061D6002FE0ED /* Apple.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Apple.mp3; sourceTree = "<group>"; };
@@ -398,6 +397,8 @@
 		B2FCEF351B1D2DB6008FC289 /* VideoAnimationLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoAnimationLayer.m; sourceTree = "<group>"; };
 		B2FCEF421B1DE7BA008FC289 /* UIImageView+AnimationCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImageView+AnimationCompletion.h"; sourceTree = "<group>"; };
 		B2FCEF431B1DE7BA008FC289 /* UIImageView+AnimationCompletion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+AnimationCompletion.m"; sourceTree = "<group>"; };
+		B2FCEF451B1EDCCC008FC289 /* UIAlertView+Blocks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIAlertView+Blocks.h"; sourceTree = "<group>"; };
+		B2FCEF461B1EDCCC008FC289 /* UIAlertView+Blocks.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIAlertView+Blocks.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -678,6 +679,8 @@
 		B2D5F28E1B0F5EFE002FE0ED /* Category */ = {
 			isa = PBXGroup;
 			children = (
+				B2FCEF451B1EDCCC008FC289 /* UIAlertView+Blocks.h */,
+				B2FCEF461B1EDCCC008FC289 /* UIAlertView+Blocks.m */,
 				B2FCEF421B1DE7BA008FC289 /* UIImageView+AnimationCompletion.h */,
 				B2FCEF431B1DE7BA008FC289 /* UIImageView+AnimationCompletion.m */,
 				B2D5F28F1B0F5EFE002FE0ED /* UIImage+Reflection.h */,
@@ -797,7 +800,6 @@
 			isa = PBXGroup;
 			children = (
 				B2D5F32D1B0F5F1E002FE0ED /* IMG_Dst.mov */,
-				B2D5F32E1B0F5F1E002FE0ED /* IMG_Orig.mp4 */,
 			);
 			path = Videos;
 			sourceTree = "<group>";
@@ -1056,7 +1058,6 @@
 				B2D5F34F1B1061D6002FE0ED /* I Do.mp3 in Resources */,
 				B2D5F2D41B0F5EFE002FE0ED /* record_deletesure_normal@2x.png in Resources */,
 				B2D5F2CB1B0F5EFE002FE0ED /* record_close_highlighted.png in Resources */,
-				B2D5F33A1B0F5F1E002FE0ED /* IMG_Orig.mp4 in Resources */,
 				B2D5F2D51B0F5EFE002FE0ED /* record_flashlight_disable.png in Resources */,
 				B2D5F3861B10EF70002FE0ED /* pause.png in Resources */,
 				B2D5F2ED1B0F5EFE002FE0ED /* record_lensflip_highlighted.png in Resources */,
@@ -1130,6 +1131,7 @@
 				B2D5F31C1B0F5EFE002FE0ED /* SRScreenRecorder.m in Sources */,
 				B2D5F3091B0F5EFE002FE0ED /* DDHTimerControl.m in Sources */,
 				B2D5F3761B10BEE3002FE0ED /* UIView+LayerEffects.m in Sources */,
+				B2FCEF471B1EDCCC008FC289 /* UIAlertView+Blocks.m in Sources */,
 				B2D5F1E91B0F564D002FE0ED /* ViewController.m in Sources */,
 				B2D5F3061B0F5EFE002FE0ED /* CaptureViewController.m in Sources */,
 				B2D5F31E1B0F5EFE002FE0ED /* PBJVideoView.m in Sources */,

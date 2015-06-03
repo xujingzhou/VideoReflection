@@ -26,10 +26,10 @@
 #import "VideoView.h"
 #import "VideoAnimationLayer.h"
 #import "UIImageView+AnimationCompletion.h"
+#import "UIAlertView+Blocks.h"
 
 #define MaxVideoLength 10
 #define DemoDestinationVideoName @"IMG_Dst.mov"
-#define DemoOriginalVideoName @"IMG_Orig.mp4"
 
 typedef NS_ENUM(NSInteger, SelectedMediaType)
 {
@@ -897,7 +897,7 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
 - (void)createGifScrollView
 {
     CGFloat height = 50;
-    self.bottomControlView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, self.view.frame.size.height - 44-iOS7AddStatusHeight - height, self.view.frame.size.width, height)];
+    self.bottomControlView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, self.view.frame.size.height - 44 - iOS7AddStatusHeight - height, self.view.frame.size.width, height)];
     
     [self.view addSubview:_bottomControlView];
     [self.bottomControlView setContentSize:CGSizeMake(self.bottomControlView.frame.size.width *2, _bottomControlView.frame.size.height)];
@@ -920,6 +920,23 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
         [ScrollSelectView getDefaultFilelist];
     }
     return self;
+}
+
+- (void)dealloc
+{
+    NSLog(@"dealloc");
+    
+    [self clearEmbeddedVideoImageViewArray];
+    [self clearEmbeddedVideoArray];
+    [self clearEmbeddedGifArray];
+    
+    _mediaType = kNone;
+    _videoEmbededPickURL = nil;
+    _videoBackgroundPickURL = nil;
+    _videoFileSize = 0;
+    _captureVideoSampleTime = kCMTimeInvalid;
+    
+    _sampleAccessor = nil;
 }
 
 - (void)viewDidLoad
@@ -1044,6 +1061,7 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     _videoReadyLabel.text = videoReadyHint;
 }
 
+#pragma mark - Clear
 - (void)clearEmbeddedGifArray
 {
     [StickerView setActiveStickerView:nil];
@@ -1090,7 +1108,101 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     }
 }
 
-#pragma mark - showDemoFromOriginalVideo:withDestinationVideo
+#pragma mark - reCalc on the basis of video size & view size
+- (CGSize)reCalcVideoViewSize:(NSString *)videoPath
+{
+    CGSize resultSize = CGSizeZero;
+    if (isStringEmpty(videoPath))
+    {
+        return resultSize;
+    }
+    
+    UIImage *videoFrame = getImageFromVideoFrame(getFileURL(videoPath), kCMTimeZero);
+    if (!videoFrame || videoFrame.size.height < 1 || videoFrame.size.width < 1)
+    {
+        return resultSize;
+    }
+    
+    NSLog(@"reCalcVideoViewSize: %@, width: %f, height: %f", videoPath, videoFrame.size.width, videoFrame.size.height);
+    
+    CGFloat statusBarHeight = iOS7AddStatusHeight;
+    CGFloat navHeight = CGRectGetHeight(self.navigationController.navigationBar.bounds);
+    CGFloat gap = 10, bottomScrollViewHeight = 50;
+    CGFloat height = CGRectGetHeight(self.view.frame) - navHeight - statusBarHeight - bottomScrollViewHeight - 2*gap;
+    CGFloat width = CGRectGetWidth(self.view.frame) - 2*gap;
+    if (height < width)
+    {
+        width = height;
+    }
+    else if (height > width)
+    {
+        height = width;
+    }
+    CGFloat videoHeight = videoFrame.size.height, videoWidth = videoFrame.size.width;
+    CGFloat scaleRatio = videoHeight/videoWidth;
+    CGFloat resultHeight = 0, resultWidth = 0;
+    if (videoHeight <= height && videoWidth <= width)
+    {
+        resultHeight = videoHeight;
+        resultWidth = videoWidth;
+    }
+    else if (videoHeight <= height && videoWidth > width)
+    {
+        resultWidth = width;
+        resultHeight = height*scaleRatio;
+    }
+    else if (videoHeight > height && videoWidth <= width)
+    {
+        resultHeight = height;
+        resultWidth = width/scaleRatio;
+    }
+    else
+    {
+        if (videoHeight < videoWidth)
+        {
+            resultWidth = width;
+            resultHeight = height*scaleRatio;
+        }
+        else if (videoHeight == videoWidth)
+        {
+            resultWidth = width;
+            resultHeight = height;
+        }
+        else
+        {
+            resultHeight = height;
+            resultWidth = width/scaleRatio;
+        }
+    }
+    
+    resultSize = CGSizeMake(resultWidth, resultHeight);
+    return resultSize;
+}
+
+#pragma mark - showDemoVideo
+- (void)showDemoVideo:(NSString *)videoPath
+{
+    CGFloat statusBarHeight = iOS7AddStatusHeight;
+    CGFloat navHeight = CGRectGetHeight(self.navigationController.navigationBar.bounds);
+    CGSize size = [self reCalcVideoViewSize:videoPath];
+    _demoVideoContentView =  [[UIView alloc] initWithFrame:CGRectMake(CGRectGetMidX(self.view.frame) - size.width/2, CGRectGetMidY(self.view.frame) - size.height/2 - navHeight - statusBarHeight, size.width, size.height)];
+    [self.view addSubview:_demoVideoContentView];
+    
+    // Video player of destination
+    _demoDestinationVideoPlayerController = [[PBJVideoPlayerController alloc] init];
+    _demoDestinationVideoPlayerController.view.frame = _demoVideoContentView.bounds;
+    _demoDestinationVideoPlayerController.view.clipsToBounds = YES;
+    _demoDestinationVideoPlayerController.videoView.videoFillMode = AVLayerVideoGravityResizeAspect;
+    _demoDestinationVideoPlayerController.playbackLoops = YES;
+    [_demoVideoContentView addSubview:_demoDestinationVideoPlayerController.view];
+    
+    // Popup modal view
+    [[KGModal sharedInstance] setCloseButtonType:KGModalCloseButtonTypeLeft];
+    [[KGModal sharedInstance] showWithContentView:_demoVideoContentView andAnimated:YES];
+    
+    [self playDemoVideo:videoPath withinVideoPlayerController:_demoDestinationVideoPlayerController];
+}
+
 - (void)showDemoFromOriginalVideo:(NSString *)originalVideo withDestinationVideo:(NSString *)destinationVideo
 {
     CGFloat navHeight = CGRectGetHeight(self.navigationController.navigationBar.bounds);
@@ -1240,11 +1352,22 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
                 ProgressBarDismissLoading(GBLocalizedString(@"Failed"));
             }
             
-            showAlertMessage(result, nil);
-            
-            // Demo result
-            NSString *outputPath = [SRScreenRecorder sharedInstance].filenameBlock();
-            [self showDemoFromOriginalVideo:[_videoBackgroundPickURL relativePath] withDestinationVideo:outputPath];
+            // Alert
+            NSString *ok = GBLocalizedString(@"OK");
+            [UIAlertView showWithTitle:nil
+                               message:result
+                     cancelButtonTitle:ok
+                     otherButtonTitles:nil
+                              tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+                                  if (buttonIndex == [alertView cancelButtonIndex])
+                                  {
+                                      NSLog(@"Alert Cancelled");
+                                      
+                                      // Demo result
+                                      NSString *outputPath = [SRScreenRecorder sharedInstance].filenameBlock();
+                                      [self showDemoVideo:outputPath];
+                                  }
+                              }];
             
             [self clearEmbeddedVideoImageViewArray];
             
