@@ -151,7 +151,13 @@
 #pragma mark - AVAudioPlayerDelegate
 - (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag
 {
-    NSLog(@"audioPlayerDidFinishPlaying. [self.allAudios count]: %ld", (unsigned long)[self.allAudios count]);
+    NSLog(@"lastSelectRow.row: %ld, [self.allAudios count]: %ld", (long)self.lastSelectRow.row, (unsigned long)[self.allAudios count]);
+    
+    if (self.lastSelectRow && self.lastSelectRow.row < [self.allAudios count])
+    {
+        AudioCell *cellLast = (AudioCell*)[self.tableView cellForRowAtIndexPath:self.lastSelectRow];
+        cellLast.avatarView.image = [UIImage imageNamed:@"start"];
+    }
 }
 
 #pragma mark
