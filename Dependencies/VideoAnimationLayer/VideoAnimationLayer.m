@@ -50,6 +50,19 @@
     return self;
 }
 
+- (void)dealloc
+{
+    NSLog(@"dealloc at VideoAnimationLayer");
+    
+    _currentVideoFrameIndex = NSNotFound;
+    _videoDuration = 0;
+    if (_imageVideoFrames)
+    {
+        [_imageVideoFrames removeAllObjects];
+        _imageVideoFrames = nil;
+    }
+}
+
 + (id)layerWithVideoFilePath:(NSString *)filePath withFrame:(CGRect)frame
 {
     VideoAnimationLayer *layer = [self layer];
@@ -136,11 +149,9 @@
     if (_imageVideoFrames)
     {
         [_imageVideoFrames removeAllObjects];
+        _imageVideoFrames = nil;
     }
-    else
-    {
-        _imageVideoFrames = [[NSMutableArray alloc] initWithCapacity:100];
-    }
+    _imageVideoFrames = [[NSMutableArray alloc] initWithCapacity:10];
     
     AVURLAsset *videoAsset = [AVURLAsset URLAssetWithURL:videoURL options:nil];
     MIMovieVideoSampleAccessor *sampleAccessor = [[MIMovieVideoSampleAccessor alloc]  initWithMovie:videoAsset
@@ -164,16 +175,17 @@
         
         // Get frame image
         CMSampleBufferRef sampleBuffer = buffer.CMSampleBuffer;
-        UIImage *thumbnail = imageFromSampleBuffer(sampleBuffer);
+        UIImage *thumbnail = imageFixOrientation(imageFromSampleBuffer(sampleBuffer));
         if (thumbnail)
         {
             if (saveToCGImage)
             {
-                [_imageVideoFrames addObject:(id)[imageFixOrientation(thumbnail) CGImage]];
+                // Only used to embeded video so that reduce size by "generateThumbnailPhoto()"
+                [_imageVideoFrames addObject:(id)[generateThumbnailPhoto(thumbnail) CGImage]];
             }
             else
             {
-                [_imageVideoFrames addObject:imageFixOrientation(thumbnail)];
+                [_imageVideoFrames addObject:generateThumbnailPhoto(thumbnail)];
             }
         }
     }

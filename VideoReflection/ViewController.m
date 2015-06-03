@@ -1363,7 +1363,7 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
                                   {
                                       NSLog(@"Alert Cancelled");
                                       
-                                      // Demo result
+                                      // Demo result video
                                       NSString *outputPath = [SRScreenRecorder sharedInstance].filenameBlock();
                                       [self showDemoVideo:outputPath];
                                   }
