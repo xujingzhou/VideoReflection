@@ -103,7 +103,7 @@ static NSInteger counter;
 
 #pragma mark Setup
 
-- (void)setupAssetWriterWithURL:(NSURL *)outputURL
+- (void)setupAssetWriterWithURL:(NSURL *)outputURL withOutputSize:(CGSize)outputSize
 {
     NSError *error = nil;
     
@@ -114,8 +114,8 @@ static NSInteger counter;
         NSLog(@"Error: %@", [error localizedDescription]);
     }
     
-    UIScreen *mainScreen = [UIScreen mainScreen];
-    CGSize size = mainScreen.bounds.size;
+//   UIScreen *mainScreen = [UIScreen mainScreen];
+    CGSize size = outputSize; //mainScreen.bounds.size;
     
     NSDictionary *outputSettings = @{AVVideoCodecKey : AVVideoCodecH264, AVVideoWidthKey : @(size.width), AVVideoHeightKey : @(size.height)};
     self.writerInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:outputSettings];
@@ -150,12 +150,12 @@ static NSInteger counter;
 
 #pragma mark Recording
 
-- (void)startRecording
+- (void)startRecording:(CGSize)outputSize
 {
     // Delete file
     unlink([[self getOutputFilePath] UTF8String]);
     
-    [self setupAssetWriterWithURL:[NSURL fileURLWithPath:[self getOutputFilePath]]];
+    [self setupAssetWriterWithURL:[NSURL fileURLWithPath:[self getOutputFilePath]] withOutputSize:outputSize];
     
     [self setupTimer];
 }

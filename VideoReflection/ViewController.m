@@ -10,6 +10,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <StoreKit/StoreKit.h>
+
 #import "SRScreenRecorder.h"
 #import "PBJVideoPlayerController.h"
 #import "MIMovieVideoSampleAccessor.h"
@@ -27,6 +28,7 @@
 #import "VideoAnimationLayer.h"
 #import "UIImageView+AnimationCompletion.h"
 #import "UIAlertView+Blocks.h"
+#import "LeafNotification.h"
 
 #define MaxVideoLength 10
 #define DemoDestinationVideoName @"IMG_Dst.mov"
@@ -43,6 +45,7 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
 @interface ViewController ()<UIImagePickerControllerDelegate, UINavigationControllerDelegate, PBJVideoPlayerControllerDelegate, SKStoreProductViewControllerDelegate, ScrollSelectViewDelegate>
 {
     CMPopTipView *_popTipView;
+    LeafNotification *_notification;
 }
 
 @property (nonatomic, strong) UIScrollView *captureContentView;
@@ -82,35 +85,31 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
 
 @implementation ViewController
 
-#pragma mark - findRightNavBarItemView
-// Get view for navigarion right item
-- (UIView*)findRightNavBarItemView:(UINavigationBar*)navbar
+#pragma mark - Contact US
+- (void)createContactUS
 {
-    UIView* rightView = nil;
-    for (UIView* view in navbar.subviews)
+    if (_notification)
     {
-        if (!rightView)
-        {
-            rightView = view;
-        }
-        else if (view.frame.origin.x > rightView.frame.origin.x)
-        {
-            rightView = view;
-        }
+        [_notification dismissWithAnimation:NO];
+        _notification = nil;
     }
     
-    return rightView;
+    __weak typeof(self) weakSelf = self;
+    _notification = [[LeafNotification alloc] initWithController:self text:GBLocalizedString(@"ContactUS")];
+    [self.view addSubview:_notification];
+    _notification.type = LeafNotificationTypeWarrning;
+    _notification.tapHandler = ^{
+        
+        NSLog(@"contactUs");
+        [weakSelf contactUs];
+    };
+    [_notification showWithAnimation:YES];
 }
 
-#pragma mark - Image scale
-- (UIImage *)scaleFromImage:(UIImage *)image toSize:(CGSize)size
+- (void)contactUs
 {
-    UIGraphicsBeginImageContext(size);
-    [image drawInRect:CGRectMake(0, 0, size.width, size.height)];
-    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return newImage;
+    NSString *url = @"mailto:1409694515@qq.com";
+    [[UIApplication sharedApplication] openURL: [NSURL URLWithString: url]];
 }
 
 #pragma mark - Splice Image(Up/Down)
@@ -147,18 +146,6 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     UIGraphicsEndImageContext();
     
     return resultingImage;
-}
-
-#pragma mark - ImageFromCIImage
-- (UIImage *)makeUIImageFromCIImage:(CIImage*)ciImage
-{
-    UIImage * returnImage = nil;
-    CGImageRef processedCGImage = [[CIContext contextWithOptions:nil] createCGImage:ciImage
-                                                                           fromRect:[ciImage extent]];
-    returnImage = [UIImage imageWithCGImage:processedCGImage];
-    CGImageRelease(processedCGImage);
-    
-    return returnImage;
 }
 
 #pragma mark - Authorization Helper
@@ -891,7 +878,7 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     _popTipView.dismissTapAnywhere = YES;
     [_popTipView autoDismissAnimated:YES atTimeInterval:6.0];
     
-    [_popTipView presentPointingAtView:[self findRightNavBarItemView:self.navigationController.navigationBar] inView:self.navigationController.view animated:YES];
+    [_popTipView presentPointingAtView:findRightNavBarItemView(self.navigationController.navigationBar) inView:self.navigationController.view animated:YES];
 }
 
 - (void)createGifScrollView
@@ -976,6 +963,19 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     
     // Delete temp files
     [self deleteTempDirectory];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+    // Contace us
+    [self createContactUS];
 }
 
 - (void)didReceiveMemoryWarning
@@ -1333,7 +1333,7 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
         
         return _captureVideoSampleTime;
     }];
-    [[SRScreenRecorder sharedInstance] startRecording];
+    [[SRScreenRecorder sharedInstance] startRecording:_captureContentView.bounds.size];
     [[SRScreenRecorder sharedInstance] setExportProgressBlock: ^(NSNumber *percentage) {
         
         // Export progress
