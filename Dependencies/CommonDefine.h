@@ -1,13 +1,17 @@
 //
 //  CommonDefine.h
-//  VideoReflection
+//  PictureInPicture
 //
-//  Created by Johnny Xu on 5/19/15.
+//  Created by Johnny Xu(徐景周) on 5/19/15.
 //  Copyright (c) 2015 Johnny Xu. All rights reserved.
 //
 
 #ifndef ScreenRecorder_CommonDefine_h
 #define ScreenRecorder_CommonDefine_h
+
+#import <AVFoundation/AVFoundation.h>
+#import <Foundation/Foundation.h>
+#import "SNLoading.h"
 
 // Google Ads
 #define kGoogleBannerAdUnitID @"ca-app-pub-7841133407354896/4811226962"
@@ -30,12 +34,17 @@
 #define iOS6 ((([[UIDevice currentDevice].systemVersion intValue] >= 6) && ([[UIDevice currentDevice].systemVersion intValue] < 7)) ? YES : NO )
 #define iOS5 ((([[UIDevice currentDevice].systemVersion intValue] >= 5) && ([[UIDevice currentDevice].systemVersion intValue] < 6)) ? YES : NO )
 
+#define LargeScreen ([UIScreen mainScreen].bounds.size.height > 480)
+
+#define iOS7AddStatusHeight (IOS7?20:0)
+
 // Progress Bar
 #define ProgressBarShowLoading(_Title_) [SNLoading showWithTitle:_Title_]
 #define ProgressBarDismissLoading(_Title_) [SNLoading hideWithTitle:_Title_]
 #define ProgressBarUpdateLoading(_Title_, _DetailsText_) [SNLoading updateWithTitle:_Title_ detailsText:_DetailsText_]
 
 #define degreesToRadians(degrees) ((degrees) / 180.0 * M_PI)
+#define foo4random() (1.0 * (arc4random() % ((unsigned)RAND_MAX + 1)) / RAND_MAX)
 
 // Callback
 typedef void(^GenericCallback)(BOOL success, id result);
@@ -134,7 +143,38 @@ static inline NSString* GBLocalizedString(NSString *translation_key)
     return string;
 }
 
-#pragma mark - File Manager
+#pragma mark - Show Alert
+static inline void showAlertMessage(NSString *text, NSString *title)
+{
+    NSString *ok = GBLocalizedString(@"OK");
+    [[[UIAlertView alloc] initWithTitle:title
+                                message:text
+                               delegate:nil
+                      cancelButtonTitle:ok
+                      otherButtonTitles:nil] show];
+}
+
+#pragma mark - FindRightNavBarItemView
+// Get view for navigarion right item
+static inline UIView* findRightNavBarItemView(UINavigationBar *navbar)
+{
+    UIView* rightView = nil;
+    for (UIView* view in navbar.subviews)
+    {
+        if (!rightView)
+        {
+            rightView = view;
+        }
+        else if (view.frame.origin.x > rightView.frame.origin.x)
+        {
+            rightView = view;
+        }
+    }
+    
+    return rightView;
+}
+
+#pragma mark - File Helper
 static inline NSArray* getFilelistBySymbol(NSString *symbol, NSString *dirPath)
 {
     NSMutableArray *filelist = [NSMutableArray arrayWithCapacity:1];
@@ -182,6 +222,65 @@ static inline void deleteFilesAt(NSString *directory, NSString *suffixName)
             }
         }
     }
+}
+
+static inline NSString* getFilePath(NSString *name)
+{
+    NSString *fileName = [name stringByDeletingPathExtension];
+    NSLog(@"%@",fileName);
+    NSString *fileExt = [name pathExtension];
+    NSLog(@"%@",fileExt);
+    NSString *inputVideoPath = [[NSBundle mainBundle] pathForResource:fileName ofType:fileExt];
+    
+    return inputVideoPath;
+}
+
+static inline NSURL* getFileURL(NSString *filePath)
+{
+    if (!filePath || [filePath length] == 0)
+        return nil;
+    
+    NSURL *fileURL = [NSURL URLWithString:filePath];
+    if (!fileURL || ![fileURL scheme])
+    {
+        fileURL = [NSURL fileURLWithPath:filePath];
+    }
+    
+    return fileURL;
+}
+
+// File Size(M)
+static inline long long fileSizeAtPath(NSString *filePath)
+{
+    long long result = 0;
+    NSFileManager* manager = [NSFileManager defaultManager];
+    if ([manager fileExistsAtPath:filePath])
+    {
+        result = [[manager attributesOfItemAtPath:filePath error:nil] fileSize];
+    }
+    
+    NSLog(@"fileSizeAtPath: %lld (M)", result/(1024*1024));
+    
+    return result;
+}
+
+// Folder Size(M)
+static inline float folderSizeAtPath(NSString *folderPath)
+{
+    NSFileManager* manager = [NSFileManager defaultManager];
+    if (![manager fileExistsAtPath:folderPath])
+        return 0;
+    
+    NSEnumerator *childFilesEnumerator = [[manager subpathsAtPath:folderPath] objectEnumerator];
+    NSString* fileName;
+    long long folderSize = 0;
+    while ((fileName = [childFilesEnumerator nextObject]) != nil)
+    {
+        NSString* fileAbsolutePath = [folderPath stringByAppendingPathComponent:fileName];
+        folderSize += fileSizeAtPath(fileAbsolutePath);
+    }
+    
+    return folderSize/(1024.0*1024.0);
 }
 
 #pragma mark - Screen Bounds
@@ -250,6 +349,17 @@ static inline NSString* saveImageData(NSData *imageData)
     
     NSLog(@"saveImageData: %@", imageOutputFile);
     return imageOutputFile;
+}
+
+#pragma mark - Image Scale
+static inline UIImage* scaleFromImage(UIImage *image, CGSize size)
+{
+    UIGraphicsBeginImageContext(size);
+    [image drawInRect:CGRectMake(0, 0, size.width, size.height)];
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return newImage;
 }
 
 #pragma mark - Square Image
@@ -333,15 +443,18 @@ static inline UIImage* generateThumbnail(UIImage *image, CGFloat width, CGFloat 
     UIGraphicsEndImageContext();
     // Done Resizing
     
+    CGImageRelease(imageRef);
+    
     return thumbnail;
 }
 
 static inline UIImage* generateThumbnailPhoto(UIImage *image)
 {
+    CGFloat width = 150, height = 150;
     UIImage *thumbnail = nil;
     if (image)
     {
-        thumbnail = generateThumbnail(image, 0, 0);
+        thumbnail = generateThumbnail(image, width, height);
     }
     else
     {
@@ -362,6 +475,157 @@ static inline UIImage* imageWithColor(UIColor *color)
     UIGraphicsEndImageContext();
     
     return theImage;
+}
+
+// Create a UIImage from sample buffer data
+static inline UIImage* imageFromSampleBuffer(CMSampleBufferRef sampleBuffer)
+{
+    // Get a CMSampleBuffer's Core Video image buffer for the media data
+    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+    // Lock the base address of the pixel buffer
+    CVPixelBufferLockBaseAddress(imageBuffer, 0);
+    
+    // Get the number of bytes per row for the pixel buffer
+    void *baseAddress = CVPixelBufferGetBaseAddress(imageBuffer);
+    
+    // Get the number of bytes per row for the pixel buffer
+    size_t bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer);
+    // Get the pixel buffer width and height
+    size_t width = CVPixelBufferGetWidth(imageBuffer);
+    size_t height = CVPixelBufferGetHeight(imageBuffer);
+    
+    // Create a device-dependent RGB color space
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    
+    // Create a bitmap graphics context with the sample buffer data
+    CGContextRef context = CGBitmapContextCreate(baseAddress, width, height, 8,
+                                                 bytesPerRow, colorSpace, kCGBitmapByteOrder32Little | kCGImageAlphaPremultipliedFirst);
+    // Create a Quartz image from the pixel data in the bitmap graphics context
+    CGImageRef quartzImage = CGBitmapContextCreateImage(context);
+    // Unlock the pixel buffer
+    CVPixelBufferUnlockBaseAddress(imageBuffer,0);
+    
+    // Free up the context and color space
+    CGContextRelease(context);
+    CGColorSpaceRelease(colorSpace);
+    
+    // Create an image object from the Quartz image
+    UIImage *image = [UIImage imageWithCGImage:quartzImage];
+    
+    // Release the Quartz image
+    CGImageRelease(quartzImage);
+    
+    return image;
+}
+
+static inline UIImage* imageFixOrientation(UIImage* image)
+{
+    UIImageOrientation imageOrientation = [image imageOrientation];
+    if (imageOrientation == UIImageOrientationUp)
+        return image;
+    
+    CGAffineTransform transform = CGAffineTransformIdentity;
+    UIImageOrientation io = imageOrientation;
+    if (io == UIImageOrientationDown || io == UIImageOrientationDownMirrored)
+    {
+        transform = CGAffineTransformTranslate(transform, image.size.width, image.size.height);
+        transform = CGAffineTransformRotate(transform, M_PI);
+    }
+    else if (io == UIImageOrientationLeft || io == UIImageOrientationLeftMirrored)
+    {
+        transform = CGAffineTransformTranslate(transform, image.size.width, 0);
+        transform = CGAffineTransformRotate(transform, M_PI_2);
+    }
+    else if (io == UIImageOrientationRight || io == UIImageOrientationRightMirrored)
+    {
+        transform = CGAffineTransformTranslate(transform, 0, image.size.height);
+        transform = CGAffineTransformRotate(transform, -M_PI_2);
+    }
+    
+    if (io == UIImageOrientationUpMirrored || io == UIImageOrientationDownMirrored)
+    {
+        transform = CGAffineTransformTranslate(transform, image.size.width, 0);
+        transform = CGAffineTransformScale(transform, -1, 1);
+    }
+    else if (io == UIImageOrientationLeftMirrored || io == UIImageOrientationRightMirrored)
+    {
+        transform = CGAffineTransformTranslate(transform, image.size.height, 0);
+        transform = CGAffineTransformScale(transform, -1, 1);
+    }
+    
+    CGContextRef ctx = CGBitmapContextCreate(NULL, image.size.width, image.size.height,
+                                             CGImageGetBitsPerComponent(image.CGImage), 0,
+                                             CGImageGetColorSpace(image.CGImage),
+                                             CGImageGetBitmapInfo(image.CGImage));
+    CGContextConcatCTM(ctx, transform);
+    
+    if (io == UIImageOrientationLeft || io == UIImageOrientationLeftMirrored || io == UIImageOrientationRight || io == UIImageOrientationRightMirrored)
+    {
+        CGContextDrawImage(ctx, CGRectMake(0,0,image.size.height,image.size.width), image.CGImage);
+    }
+    else
+    {
+        CGContextDrawImage(ctx, CGRectMake(0,0,image.size.width,image.size.height), image.CGImage);
+    }
+    
+    CGImageRef cgimg = CGBitmapContextCreateImage(ctx);
+    UIImage *img = [UIImage imageWithCGImage:cgimg];
+    CGContextRelease(ctx);
+    CGImageRelease(cgimg);
+    
+    return img;
+}
+
+#pragma mark - ImageFromCIImage
+static inline UIImage* makeUIImageFromCIImage(CIImage *ciImage)
+{
+    UIImage * returnImage = nil;
+    CGImageRef processedCGImage = [[CIContext contextWithOptions:nil] createCGImage:ciImage
+                                                                           fromRect:[ciImage extent]];
+    returnImage = [UIImage imageWithCGImage:processedCGImage];
+    CGImageRelease(processedCGImage);
+    
+    return returnImage;
+}
+
+#pragma mark - Video Helper
+static inline CGFloat getVideoDuration(NSURL *URL)
+{
+    NSDictionary *opts = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:NO]
+                                                     forKey:AVURLAssetPreferPreciseDurationAndTimingKey];
+    AVURLAsset *urlAsset = [AVURLAsset URLAssetWithURL:URL options:opts];
+    float second = 0;
+    second = urlAsset.duration.value/urlAsset.duration.timescale;
+    
+    return second;
+}
+
+static inline UIImage* getImageFromVideoFrame(NSURL *videoFileURL, CMTime atTime)
+{
+    NSURL *inputUrl = videoFileURL;
+    AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:inputUrl options:nil];
+    
+    AVAssetImageGenerator *assetImageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
+    assetImageGenerator.appliesPreferredTrackTransform = YES;
+    assetImageGenerator.apertureMode = AVAssetImageGeneratorApertureModeEncodedPixels;
+    
+    CGImageRef thumbnailImageRef = NULL;
+    NSError *thumbnailImageGenerationError = nil;
+    thumbnailImageRef = [assetImageGenerator copyCGImageAtTime:atTime actualTime:NULL error:&thumbnailImageGenerationError];
+    
+    if (!thumbnailImageRef)
+    {
+        NSLog(@"thumbnailImageGenerationError %@", thumbnailImageGenerationError);
+    }
+    
+    UIImage *thumbnailImage = thumbnailImageRef ? [[UIImage alloc] initWithCGImage:thumbnailImageRef] : nil;
+    
+    if (thumbnailImageRef)
+    {
+        CGImageRelease(thumbnailImageRef);
+    }
+    
+    return thumbnailImage;
 }
 
 #pragma mark - JailBreak Device

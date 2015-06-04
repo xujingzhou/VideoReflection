@@ -345,7 +345,6 @@
     AVAssetExportSession *exporter = [[AVAssetExportSession alloc] initWithAsset:mixComposition presetName:AVAssetExportPresetMediumQuality];
     exporter.videoComposition = mainCompositionInst;
     exporter.outputURL = mergeFileURL;
-    exporter.outputFileType = AVFileTypeQuickTimeMovie;
     exporter.shouldOptimizeForNetworkUse = YES;
     
     // Fix iOS 5.x crash issue by Johnny Xu.
