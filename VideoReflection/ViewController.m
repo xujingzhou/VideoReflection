@@ -55,6 +55,7 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
 @property (nonatomic, strong) PBJVideoPlayerController *demoOriginalVideoPlayerController;
 @property (nonatomic, strong) PBJVideoPlayerController *demoDestinationVideoPlayerController;
 @property (nonatomic, strong) UIView *demoVideoContentView;
+@property (nonatomic, strong) UIImageView *playDemoButton;
 
 @property (nonatomic, strong) UIScrollView *videoContentView;
 @property (nonatomic, strong) PBJVideoPlayerController *videoPlayerController1;
@@ -365,6 +366,18 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
              _playButton1.hidden = YES;
          }];
     }
+    else if (videoPlayer == _demoDestinationVideoPlayerController)
+    {
+        _playDemoButton.alpha = 1.0f;
+        _playDemoButton.hidden = NO;
+        
+        [UIView animateWithDuration:0.1f animations:^{
+            _playDemoButton.alpha = 0.0f;
+        } completion:^(BOOL finished)
+         {
+             _playDemoButton.hidden = YES;
+         }];
+    }
 }
 
 - (void)videoPlayerPlaybackDidEnd:(PBJVideoPlayerController *)videoPlayer
@@ -375,6 +388,17 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
         
         [UIView animateWithDuration:0.1f animations:^{
             _playButton1.alpha = 1.0f;
+        } completion:^(BOOL finished)
+         {
+             
+         }];
+    }
+    else if (videoPlayer == _demoDestinationVideoPlayerController)
+    {
+        _playDemoButton.hidden = NO;
+        
+        [UIView animateWithDuration:0.1f animations:^{
+            _playDemoButton.alpha = 1.0f;
         } completion:^(BOOL finished)
          {
              
@@ -1193,8 +1217,13 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     _demoDestinationVideoPlayerController.view.frame = _demoVideoContentView.bounds;
     _demoDestinationVideoPlayerController.view.clipsToBounds = YES;
     _demoDestinationVideoPlayerController.videoView.videoFillMode = AVLayerVideoGravityResizeAspect;
-    _demoDestinationVideoPlayerController.playbackLoops = YES;
+    _demoDestinationVideoPlayerController.delegate = self;
+//    _demoDestinationVideoPlayerController.playbackLoops = YES;
     [_demoVideoContentView addSubview:_demoDestinationVideoPlayerController.view];
+    
+   _playDemoButton = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"play_button"]];
+    _playDemoButton.center = _demoDestinationVideoPlayerController.view.center;
+    [_demoDestinationVideoPlayerController.view addSubview:_playDemoButton];
     
     // Popup modal view
     [[KGModal sharedInstance] setCloseButtonType:KGModalCloseButtonTypeLeft];
@@ -1362,6 +1391,8 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
                                   if (buttonIndex == [alertView cancelButtonIndex])
                                   {
                                       NSLog(@"Alert Cancelled");
+                                      
+                                      [NSThread sleepForTimeInterval:0.5];
                                       
                                       // Demo result video
                                       NSString *outputPath = [SRScreenRecorder sharedInstance].filenameBlock();
