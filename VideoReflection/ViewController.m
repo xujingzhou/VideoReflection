@@ -616,7 +616,7 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     VideoView *view = [[VideoView alloc] initWithFilePath:[_videoEmbededPickURL relativePath] withViewController:self];
     CGFloat ratio = MIN( (0.3 * self.videoContentView.width) / view.width, (0.3 * self.videoContentView.height) / view.height);
     [view setScale:ratio];
-    CGFloat gap = 30;
+    CGFloat gap = 50;
     view.center = CGPointMake(self.videoContentView.width/2 + gap, self.videoContentView.height/2 - gap);
     
     [_videoContentView addSubview:view];
@@ -1325,6 +1325,7 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
         {
             UIImageView *animatedImageView = [[UIImageView alloc] init];
             animatedImageView.frame = [view getInnerFrame];
+            animatedImageView.transform = CGAffineTransformMakeRotation([view getRotateAngle]);
             CGFloat duration = [[VideoAnimationLayer sharedInstance] captureVideoSample:_videoEmbededPickURL saveToCGImage:NO];
             animatedImageView.animationDuration = duration;
             animatedImageView.animationRepeatCount = INFINITY;
