@@ -31,8 +31,8 @@ static size_t frameIndex, frameCount;
 - (void)startAnimatingWithCompletionBlock:(Block)block
 {
 //    self.layer.cornerRadius = CGRectGetWidth(self.frame)/2;
-    self.layer.borderWidth = 2.0;
-    self.layer.borderColor = kLightBlue.CGColor;
+    self.layer.borderWidth = 3.0;
+    self.layer.borderColor = [UIColor whiteColor].CGColor;
     self.layer.masksToBounds = YES;
     
     [self setblock:block];
