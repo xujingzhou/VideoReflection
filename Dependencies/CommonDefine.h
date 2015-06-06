@@ -351,8 +351,24 @@ static inline NSString* saveImageData(NSData *imageData)
     return imageOutputFile;
 }
 
+#pragma mark - Image Border Splice
+static inline UIImage* imageBorderSplice(UIImage *image, UIImage *imageBorder)
+{
+    int widthBorder = 3;
+    CGSize size = CGSizeMake(image.size.width + 2*widthBorder, image.size.height + 2*widthBorder);
+    UIGraphicsBeginImageContext(size);
+    
+    [image drawInRect:CGRectMake(widthBorder, widthBorder, image.size.width, image.size.height)];
+    [imageBorder drawInRect:CGRectMake(0, 0, size.width, size.height)];
+    
+    UIImage *resultingImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return resultingImage;
+}
+
 #pragma mark - Image Scale
-static inline UIImage* scaleFromImage(UIImage *image, CGSize size)
+static inline UIImage* scaleImage(UIImage *image, CGSize size)
 {
     UIGraphicsBeginImageContext(size);
     [image drawInRect:CGRectMake(0, 0, size.width, size.height)];

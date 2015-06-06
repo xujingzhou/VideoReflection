@@ -77,6 +77,9 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
 @property (nonatomic, assign) SelectedMediaType mediaType;
 @property (nonatomic, strong) NSMutableArray *gifArray;
 
+@property (nonatomic, strong) ScrollSelectView *borderView;
+@property (nonatomic, strong) UIImageView *borderImageView;
+
 @property (nonatomic, copy) NSURL *videoEmbededPickURL;
 @property (nonatomic, strong) NSMutableArray *videoArray;
 
@@ -147,6 +150,16 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     UIGraphicsEndImageContext();
     
     return resultingImage;
+}
+
+#pragma mark - Random Border
+- (UIImage*)getBorderImage:(UIImage*)image
+{
+    NSString *imageName = [NSString stringWithFormat:@"border_%i",(arc4random()%(int)9)];
+    UIImage *imageBorder = [UIImage imageNamed:imageName];
+    UIImage *imageResult = imageBorderSplice(image, imageBorder);
+    
+    return imageResult;
 }
 
 #pragma mark - Authorization Helper
@@ -644,6 +657,24 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     [[SRScreenRecorder sharedInstance] setVideoArray:_videoArray];
 }
 
+#pragma mark - pickVideoBorders
+- (void)didSelectedBorderIndex:(NSInteger)styleIndex
+{
+    NSLog(@"didSelectedBorderIndex: %lu", styleIndex);
+    
+    if (styleIndex == 0)
+    {
+        [_borderImageView setImage:nil];
+        return;
+    }
+    
+    NSString *imageName = [NSString stringWithFormat:@"border_%lu.png", (long)styleIndex];
+    NSString *imagePath = [[NSBundle mainBundle] pathForResource:imageName ofType:nil];
+    UIImage *image = [[UIImage alloc] initWithContentsOfFile:imagePath];
+    image = scaleImage(image, _borderImageView.bounds.size);
+    [_borderImageView setImage:image];
+}
+
 #pragma mark - pickGif
 - (void)pickGifFromCustom
 {
@@ -727,7 +758,6 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
 
 - (void)defaultImageSetting
 {
-//    UIImage *image = [UIImage imageNamed:@"Video_Add"];
     _videoView1.image = nil;
     _videoView2.image = nil;
 }
@@ -835,14 +865,12 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     [_closeVideoPlayerButton1 addTarget:self action:@selector(handleCloseVideo) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_closeVideoPlayerButton1];
     _closeVideoPlayerButton1.hidden = YES;
+    
+    // Border
+    _borderImageView = [[UIImageView alloc] initWithFrame:_videoPlayerController1.view.frame];
+    [_borderImageView setBackgroundColor:[UIColor clearColor]];
+    [_captureContentView addSubview:_borderImageView];
 }
-
-//- (void)createVideoFrame
-//{
-//    UIView *lineView = [[UIView alloc] initWithFrame:CGRectMake(CGRectGetMinX(_videoPlayerController1.view.bounds), CGRectGetMaxY(_videoPlayerController1.view.bounds)-0.5, CGRectGetWidth(_videoPlayerController1.view.bounds), 1)];
-//    [lineView setBackgroundColor:[UIColor yellowColor]];
-//    [_videoPlayerController1.view addSubview:lineView];
-//}
 
 - (void)createNavigationBar
 {
@@ -905,21 +933,43 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     [_popTipView presentPointingAtView:findRightNavBarItemView(self.navigationController.navigationBar) inView:self.navigationController.view animated:YES];
 }
 
-- (void)createGifScrollView
+- (void)createBottomControlView
 {
     CGFloat height = 50;
-    self.bottomControlView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, self.view.frame.size.height - 44 - iOS7AddStatusHeight - height, self.view.frame.size.width, height)];
-    
+    CGFloat navHeight = CGRectGetHeight(self.navigationController.navigationBar.bounds);
+    self.bottomControlView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, CGRectGetHeight(self.view.frame) - navHeight - iOS7AddStatusHeight - height, CGRectGetWidth(self.view.frame), height)];
     [self.view addSubview:_bottomControlView];
-    [self.bottomControlView setContentSize:CGSizeMake(self.bottomControlView.frame.size.width *2, _bottomControlView.frame.size.height)];
+    [self.bottomControlView setContentSize:CGSizeMake(CGRectGetWidth(self.bottomControlView.frame) * 2, CGRectGetHeight(self.bottomControlView.frame))];
     [self.bottomControlView setPagingEnabled:YES];
     [self.bottomControlView setScrollEnabled:NO];
     [_bottomControlView setHidden:YES];
-    
-    _gifScrollView = [[ScrollSelectView alloc] initWithFrameFromGif:CGRectMake(0, 0, self.bottomControlView.frame.size.width, self.bottomControlView.frame.size.height)];
+}
+
+- (void)createGifScrollView
+{
+    _gifScrollView = [[ScrollSelectView alloc] initWithFrameFromGif:CGRectMake(0, 0, CGRectGetWidth(self.bottomControlView.frame), CGRectGetHeight(self.bottomControlView.frame))];
     [_gifScrollView setBackgroundColor:[[UIColor redColor] colorWithAlphaComponent:0.5]];
     _gifScrollView.delegateSelect = self;
     [_bottomControlView addSubview:_gifScrollView];
+}
+
+- (void)createVideoBorderScrollView
+{
+    CGFloat height = 50;
+    _borderView = [[ScrollSelectView alloc] initWithFrameFromBorder:CGRectMake(0, CGRectGetMinY(self.bottomControlView.frame) - height, CGRectGetWidth(self.bottomControlView.frame), CGRectGetHeight(self.bottomControlView.frame))];
+    [_borderView setBackgroundColor:[[UIColor redColor] colorWithAlphaComponent:0.5]];
+    _borderView.delegateSelect = self;
+    [self.view addSubview:_borderView];
+    
+    [self createFrameLine:_borderView];
+    [_borderView setHidden:YES];
+}
+
+- (void)createFrameLine:(UIView *)view
+{
+    UIView *lineView = [[UIView alloc] initWithFrame:CGRectMake(CGRectGetMinX(view.bounds), CGRectGetMaxY(view.bounds) - 0.5, CGRectGetWidth(view.bounds), 1)];
+    [lineView setBackgroundColor:[UIColor orangeColor]];
+    [view addSubview:lineView];
 }
 
 - (id)init
@@ -977,7 +1027,9 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     
     [self createRecommendAppView];
 
+    [self createBottomControlView];
     [self createGifScrollView];
+    [self createVideoBorderScrollView];
     
     NSString *demoVideoPath = getFilePath(DemoDestinationVideoName);
     [self playDemoVideo:demoVideoPath withinVideoPlayerController:_videoPlayerController1];
@@ -1044,10 +1096,12 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
 - (void)showBottomControlView
 {
     CGFloat height = 50;
-    self.bottomControlView.hidden = NO;
+    [_bottomControlView setHidden:NO];
+    [_borderView setHidden:NO];
     [UIView animateWithDuration:0.3
                      animations:^{
-                         self.bottomControlView.frame =  CGRectMake(0, self.view.frame.size.height - height, self.view.frame.size.width, height);
+                         self.bottomControlView.frame =  CGRectMake(0, CGRectGetHeight(self.view.frame) - height, CGRectGetWidth(self.view.frame), height);
+                         self.borderView.frame = CGRectMake(0, CGRectGetMinY(_bottomControlView.frame) - height, CGRectGetWidth(self.view.frame), height);
                      } completion:^(BOOL finished) {
                          
                      }];
@@ -1058,9 +1112,12 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
 {
     [UIView animateWithDuration:0.3
                      animations:^{
-                         self.bottomControlView.frame =  CGRectMake(0, self.view.frame.size.height, self.view.frame.size.width, 1);
+                         self.bottomControlView.frame =  CGRectMake(0, CGRectGetHeight(self.view.frame), CGRectGetWidth(self.view.frame), 1);
+                         self.borderView.frame = CGRectMake(0, CGRectGetHeight(self.view.frame), CGRectGetWidth(self.view.frame), 1);
                      } completion:^(BOOL finished) {
+                         
                          [self.bottomControlView setHidden:YES];
+                         [_borderView setHidden:YES];
                      }];
     
     
@@ -1076,6 +1133,7 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
     
     self.videoBackgroundPickURL = nil;
     self.videoEmbededPickURL = nil;
+    [self.borderImageView setImage:nil];
     
     [self clearEmbeddedGifArray];
     [self clearEmbeddedVideoArray];

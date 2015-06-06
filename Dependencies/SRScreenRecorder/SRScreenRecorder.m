@@ -77,6 +77,8 @@ static NSInteger counter;
 
 - (void)dealloc
 {
+    NSLog(@"dealloc at SRScreenRecorder");
+    
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
     _writer = nil;

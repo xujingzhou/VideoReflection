@@ -28,8 +28,8 @@
 "MusicList" = "音乐列表";
 "Audio" = "音频";
 
-"SelectEmbeddedObjects" = "选择嵌入的对象";
-"Gif" = "GIF";
+"SelectEmbeddedObjects" = "选择嵌入的对象(可选)";
+"Gif" = "GIF和视频边框";
 "BackgroundMusic" = "背景音乐";
 
 "SelectVideo" = "选择背景视频";

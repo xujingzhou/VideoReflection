@@ -10,6 +10,7 @@
 @property (nonatomic, assign) NSInteger selectStyleIndex;
 
 - (id)initWithFrameFromGif:(CGRect)frame;
+- (id)initWithFrameFromBorder:(CGRect)frame;
 
 + (void)getDefaultFilelist;
 
@@ -19,5 +20,6 @@
 
 @optional
 - (void)didSelectedGifIndex:(NSInteger)styleIndex;
+- (void)didSelectedBorderIndex:(NSInteger)styleIndex;
 
 @end
