@@ -81,9 +81,9 @@ static NSInteger counter;
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
-    _writer = nil;
-    _writerInput = nil;
-    _writerInputPixelBufferAdaptor = nil;
+//    _writer = nil;
+//    _writerInput = nil;
+//    _writerInputPixelBufferAdaptor = nil;
     
     if (_exportSession)
     {
