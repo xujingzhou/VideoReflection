@@ -1672,7 +1672,7 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
         case 2:
         {
             // BeautyTime
-            [self showAppInAppStore:@"964149617"];
+            [self showAppInAppStore:@"1006401631"];
             break;
         }
         default:

@@ -2,8 +2,8 @@
 #import <AssetsLibrary/AssetsLibrary.h>
 #import "SRScreenRecorder.h"
 #import "PBJVideoView.h"
-#import "GifAnimationLayer.h"
-#import "VideoAnimationLayer.h"
+//#import "GifAnimationLayer.h"
+//#import "VideoAnimationLayer.h"
 #import "StickerView.h"
 #import "VideoView.h"
 
@@ -218,10 +218,10 @@ static NSInteger counter;
                                {
                                    screenshot = self.captureViewBlock();
                                }
-                               else
-                               {
-                                   screenshot = [self screenshot];
-                               }
+//                               else
+//                               {
+//                                   screenshot = [self screenshot];
+//                               }
                            });
                            
                            if (!screenshot)
@@ -287,46 +287,46 @@ static NSInteger counter;
 //    }
 }
 
-- (UIImage *)screenshot
-{
-    UIScreen *mainScreen = [UIScreen mainScreen];
-    CGSize imageSize = mainScreen.bounds.size;
-    if (UIGraphicsBeginImageContextWithOptions)
-    {
-        UIGraphicsBeginImageContextWithOptions(imageSize, NO, 0);
-    }
-    else
-    {
-        UIGraphicsBeginImageContext(imageSize);
-    }
-    
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    
-    NSArray *windows = [[UIApplication sharedApplication] windows];
-    for (UIWindow *window in windows)
-    {
-        if (![window respondsToSelector:@selector(screen)] || window.screen == mainScreen)
-        {
-            CGContextSaveGState(context);
-            
-            CGContextTranslateCTM(context, window.center.x, window.center.y);
-            CGContextConcatCTM(context, [window transform]);
-            CGContextTranslateCTM(context,
-                                  -window.bounds.size.width * window.layer.anchorPoint.x,
-                                  -window.bounds.size.height * window.layer.anchorPoint.y);
-            
-            [window.layer.presentationLayer renderInContext:context];
-            
-            CGContextRestoreGState(context);
-        }
-    }
-    
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    
-    UIGraphicsEndImageContext();
-    
-    return image;
-}
+//- (UIImage *)screenshot
+//{
+//    UIScreen *mainScreen = [UIScreen mainScreen];
+//    CGSize imageSize = mainScreen.bounds.size;
+//    if (UIGraphicsBeginImageContextWithOptions)
+//    {
+//        UIGraphicsBeginImageContextWithOptions(imageSize, NO, 0);
+//    }
+//    else
+//    {
+//        UIGraphicsBeginImageContext(imageSize);
+//    }
+//    
+//    CGContextRef context = UIGraphicsGetCurrentContext();
+//    
+//    NSArray *windows = [[UIApplication sharedApplication] windows];
+//    for (UIWindow *window in windows)
+//    {
+//        if (![window respondsToSelector:@selector(screen)] || window.screen == mainScreen)
+//        {
+//            CGContextSaveGState(context);
+//            
+//            CGContextTranslateCTM(context, window.center.x, window.center.y);
+//            CGContextConcatCTM(context, [window transform]);
+//            CGContextTranslateCTM(context,
+//                                  -window.bounds.size.width * window.layer.anchorPoint.x,
+//                                  -window.bounds.size.height * window.layer.anchorPoint.y);
+//            
+//            [window.layer.presentationLayer renderInContext:context];
+//            
+//            CGContextRestoreGState(context);
+//        }
+//    }
+//    
+//    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+//    
+//    UIGraphicsEndImageContext();
+//    
+//    return image;
+//}
 
 #pragma mark Background tasks
 
@@ -488,90 +488,61 @@ static NSInteger counter;
     library = nil;
 }
 
-#pragma mark - pixelBufferFromCGImage
-- (CVPixelBufferRef )pixelBufferFromCGImage:(CGImageRef)image size:(CGSize)size
-{
-    NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
-                             [NSNumber numberWithBool:YES], kCVPixelBufferCGImageCompatibilityKey,
-                             [NSNumber numberWithBool:YES], kCVPixelBufferCGBitmapContextCompatibilityKey, nil];
-    CVPixelBufferRef pxbuffer = NULL;
-    CVReturn status = CVPixelBufferCreate(kCFAllocatorDefault, size.width, size.height, kCVPixelFormatType_32ARGB, (__bridge CFDictionaryRef) options, &pxbuffer);
-    
-    NSParameterAssert(status == kCVReturnSuccess && pxbuffer != NULL);
-    
-    CVPixelBufferLockBaseAddress(pxbuffer, 0);
-    void *pxdata = CVPixelBufferGetBaseAddress(pxbuffer);
-    NSParameterAssert(pxdata != NULL);
-    
-    CGColorSpaceRef rgbColorSpace = CGColorSpaceCreateDeviceRGB();
-    CGContextRef context = CGBitmapContextCreate(pxdata, size.width, size.height, 8, 4*size.width, rgbColorSpace, kCGImageAlphaPremultipliedFirst);
-    NSParameterAssert(context);
-    
-    CGContextDrawImage(context, CGRectMake(0, 0, CGImageGetWidth(image), CGImageGetHeight(image)), image);
-    
-    CGColorSpaceRelease(rgbColorSpace);
-    CGContextRelease(context);
-    
-    CVPixelBufferUnlockBaseAddress(pxbuffer, 0);
-    
-    return pxbuffer;
-}
-
 #pragma mark - Audio
-- (void)setupAudioRecord
-{
-    // Setup to be able to record global sounds (preexisting app sounds)
-    NSError *sessionError = nil;
-    if ([[AVAudioSession sharedInstance] respondsToSelector:@selector(setCategory:withOptions:error:)])
-        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionDuckOthers error:&sessionError];
-    else
-        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord error:&sessionError];
-    
-    // Set the audio session to be active
-    [[AVAudioSession sharedInstance] setActive:YES error:&sessionError];
-    
-    if (sessionError)
-    {
-        self.finishRecordingBlock(NO, sessionError.description);
-        return;
-    }
-    
-    // Set the number of audio channels, using defaults if necessary.
-    NSNumber *audioChannels = (self.numberOfAudioChannels ? self.numberOfAudioChannels : @2);
-    NSNumber *sampleRate    = (self.audioSampleRate       ? self.audioSampleRate       : @44100.f);
-    
-    NSDictionary *audioSettings = @{
-                                    AVNumberOfChannelsKey : (audioChannels ? audioChannels : @2),
-                                    AVSampleRateKey       : (sampleRate    ? sampleRate    : @44100.0f)
-                                    };
-    
-    
-    // Initialize the audio recorder
-    // Set output path of the audio file
-    NSError *error = nil;
-    NSAssert((self.audioOutPath != nil), @"Audio out path cannot be nil!");
-    _audioRecorder = [[AVAudioRecorder alloc] initWithURL:[NSURL fileURLWithPath:self.audioOutPath] settings:audioSettings error:&error];
-    if (error)
-    {
-        // Let the delegate know that shit has happened.
-        self.finishRecordingBlock(NO, error.description);;
-        _audioRecorder = nil;
-        
-        return;
-    }
-    
-    [_audioRecorder prepareToRecord];
-    
-    // Start recording :P
-    [_audioRecorder record];
-}
-
-- (void)stopAudioRecord
-{
-    // Stop the audio recording
-    [_audioRecorder stop];
-    _audioRecorder = nil;
-}
+//- (void)setupAudioRecord
+//{
+//    // Setup to be able to record global sounds (preexisting app sounds)
+//    NSError *sessionError = nil;
+//    if ([[AVAudioSession sharedInstance] respondsToSelector:@selector(setCategory:withOptions:error:)])
+//        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionDuckOthers error:&sessionError];
+//    else
+//        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord error:&sessionError];
+//    
+//    // Set the audio session to be active
+//    [[AVAudioSession sharedInstance] setActive:YES error:&sessionError];
+//    
+//    if (sessionError)
+//    {
+//        self.finishRecordingBlock(NO, sessionError.description);
+//        return;
+//    }
+//    
+//    // Set the number of audio channels, using defaults if necessary.
+//    NSNumber *audioChannels = (self.numberOfAudioChannels ? self.numberOfAudioChannels : @2);
+//    NSNumber *sampleRate    = (self.audioSampleRate       ? self.audioSampleRate       : @44100.f);
+//    
+//    NSDictionary *audioSettings = @{
+//                                    AVNumberOfChannelsKey : (audioChannels ? audioChannels : @2),
+//                                    AVSampleRateKey       : (sampleRate    ? sampleRate    : @44100.0f)
+//                                    };
+//    
+//    
+//    // Initialize the audio recorder
+//    // Set output path of the audio file
+//    NSError *error = nil;
+//    NSAssert((self.audioOutPath != nil), @"Audio out path cannot be nil!");
+//    _audioRecorder = [[AVAudioRecorder alloc] initWithURL:[NSURL fileURLWithPath:self.audioOutPath] settings:audioSettings error:&error];
+//    if (error)
+//    {
+//        // Let the delegate know that shit has happened.
+//        self.finishRecordingBlock(NO, error.description);;
+//        _audioRecorder = nil;
+//        
+//        return;
+//    }
+//    
+//    [_audioRecorder prepareToRecord];
+//    
+//    // Start recording :P
+//    [_audioRecorder record];
+//}
+//
+//- (void)stopAudioRecord
+//{
+//    // Stop the audio recording
+//    [_audioRecorder stop];
+//    _audioRecorder = nil;
+//}
 
 - (void)addEffectToRecording
 {
