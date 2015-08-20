@@ -1,6 +1,6 @@
 //
 //  CommonDefine.h
-//  PictureInPicture
+//  VideoReflection
 //
 //  Created by Johnny Xu(徐景周) on 5/19/15.
 //  Copyright (c) 2015 Johnny Xu. All rights reserved.

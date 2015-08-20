@@ -1,9 +1,14 @@
+//
+//  SRScreenRecorder
+//  VideoReflection
+//
+//  Created by Johnny Xu(徐景周) on 5/22/15.
+//  Copyright (c) 2015 Future Studio. All rights reserved.
+//
 
 #import <AssetsLibrary/AssetsLibrary.h>
 #import "SRScreenRecorder.h"
 #import "PBJVideoView.h"
-//#import "GifAnimationLayer.h"
-//#import "VideoAnimationLayer.h"
 #import "StickerView.h"
 #import "VideoView.h"
 
