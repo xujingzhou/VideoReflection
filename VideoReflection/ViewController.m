@@ -660,7 +660,7 @@ typedef NS_ENUM(NSInteger, SelectedMediaType)
 #pragma mark - pickVideoBorders
 - (void)didSelectedBorderIndex:(NSInteger)styleIndex
 {
-    NSLog(@"didSelectedBorderIndex: %lu", styleIndex);
+    NSLog(@"didSelectedBorderIndex: %lu", (long)styleIndex);
     
     if (styleIndex == 0)
     {
