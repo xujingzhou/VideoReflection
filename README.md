@@ -1,5 +1,5 @@
 # VideoReflection
-Embeddable video, GIF, water reflection and video borders into a video.
+Embeddable video, GIF, water reflection and video borders into a video. Tested on iPhone 4 and iPhone 5S.
 
 Johnny Xu(徐景周)  
 Future Studio  
