@@ -6,6 +6,6 @@ Future Studio
 
 <img src="https://github.com/xujingzhou/VideoReflection/blob/master/Resource/Demo/EN_640x960_1.png" width = "300" height = "400" alt="Demo" align=center />
 
-Output Video: 
+Output Video  
 <img src="https://github.com/xujingzhou/VideoReflection/blob/master/Resource/Demo/Demo.gif" width = "300" height = "500" alt="Demo" align=center />
 
