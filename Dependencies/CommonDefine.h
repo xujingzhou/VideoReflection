@@ -6,11 +6,10 @@
 //  Copyright (c) 2015 Johnny Xu. All rights reserved.
 //
 
-#ifndef ScreenRecorder_CommonDefine_h
-#define ScreenRecorder_CommonDefine_h
+#ifndef CommonDefine_h
+#define CommonDefine_h
 
 #import <AVFoundation/AVFoundation.h>
-#import <Foundation/Foundation.h>
 #import "SNLoading.h"
 
 // Google Ads
@@ -604,50 +603,6 @@ static inline UIImage* makeUIImageFromCIImage(CIImage *ciImage)
     return returnImage;
 }
 
-#pragma mark - createGradientImage
-// The following function was taken from the increadibly awesome HockeyKit
-// Created by Peter Steinberger on 10.01.11.
-// Copyright 2012 Peter Steinberger. All rights reserved.
-CGImageRef createGradientImage(const size_t pixelsWide, const size_t pixelsHigh, const CGFloat fromAlpha, const CGFloat toAlpha)
-{
-    // gradient is always black-white and the mask must be in the gray colorspace
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
-    
-    // create the bitmap context
-    CGContextRef gradientBitmapContext = CGBitmapContextCreate(NULL, pixelsWide, pixelsHigh, 8, 0, colorSpace, (CGBitmapInfo)kCGImageAlphaNone);
-    
-    // define the start and end grayscale values (with the alpha, even though
-    // our bitmap context doesn't support alpha the gradient requires it)
-    CGFloat colors[] = {toAlpha, 1.0f, fromAlpha, 1.0f};
-    
-    // create the CGGradient and then release the gray color space
-    CGGradientRef grayScaleGradient = CGGradientCreateWithColorComponents(colorSpace, colors, NULL, 2);
-    CGColorSpaceRelease(colorSpace);
-    
-    // create the start and end points for the gradient vector (straight down)
-    CGPoint gradientEndPoint = CGPointZero;
-    CGPoint gradientStartPoint = (CGPoint){.x = 0.0f, .y = pixelsHigh};
-    
-    // draw the gradient into the gray bitmap context
-    CGContextDrawLinearGradient(gradientBitmapContext, grayScaleGradient, gradientStartPoint, gradientEndPoint, kCGGradientDrawsAfterEndLocation);
-    CGGradientRelease(grayScaleGradient);
-    
-    // convert the context into a CGImageRef and release the context
-    CGImageRef theCGImage = CGBitmapContextCreateImage(gradientBitmapContext);
-    CGContextRelease(gradientBitmapContext);
-    
-    // return the imageref containing the gradient
-    return theCGImage;
-}
-
-BOOL imageHasAlpha(CGImageRef imageRef)
-{
-    CGImageAlphaInfo alpha = CGImageGetAlphaInfo(imageRef);
-    BOOL hasAlpha = (alpha == kCGImageAlphaFirst || alpha == kCGImageAlphaLast || alpha == kCGImageAlphaPremultipliedFirst || alpha == kCGImageAlphaPremultipliedLast);
-    
-    return hasAlpha;
-}
-
 #pragma mark - Video Helper
 static inline CGFloat getVideoDuration(NSURL *URL)
 {
@@ -686,33 +641,6 @@ static inline UIImage* getImageFromVideoFrame(NSURL *videoFileURL, CMTime atTime
     }
     
     return thumbnailImage;
-}
-
-#pragma mark - JailBreak Device
-
-#define ARRAY_SIZE(a) sizeof(a)/sizeof(a[0])
-const char* jailbreak_tool_pathes[] =
-{
-    "/Applications/Cydia.app",
-    "/Library/MobileSubstrate/MobileSubstrate.dylib",
-    "/bin/bash",
-    "/usr/sbin/sshd",
-    "/etc/apt"
-};
-
-static inline BOOL isJailBreak()
-{
-    for (int i=0; i<ARRAY_SIZE(jailbreak_tool_pathes); i++)
-    {
-        if ([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithUTF8String:jailbreak_tool_pathes[i]]])
-        {
-            NSLog(@"The device is jail broken!");
-            return YES;
-        }
-    }
-    
-    NSLog(@"The device is NOT jail broken!");
-    return NO;
 }
 
 #endif
